@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>כ"ב שאלות - מערכת ניהול וחידונים</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Frank Ruhl Libre & Heebo for Haaretz editorial feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #FAF8F5; /* Warm parchment / ivory background */
+            color: #262322; /* Warm charcoal text */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .serif-title {
+            font-family: 'Frank Ruhl Libre', serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1ECE4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4C9BD;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B5A899;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#C26D46] selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-[#FAF8F5]/90 backdrop-blur border-b border-[#E6E0D4] sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 bg-[#262322] text-[#FAF8F5] flex items-center justify-center font-bold text-lg rounded-xl shadow-xs serif-title">כ"ב</div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight serif-title text-[#262322]" id="app-brand-title">כ"ב שאלות</h1>
+                    <p class="text-xs text-[#7A7267]" id="app-brand-subtitle">מערכת ניהול שעשועון טריוויה עיתונאית</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 space-x-reverse" id="nav-mode-container">
+                <button onclick="switchView('management')" id="nav-btn-management" class="px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#262322] text-[#FAF8F5] shadow-xs cursor-pointer">
+                    מערכת ניהול
+                </button>
+                <button onclick="switchView('simulation')" id="nav-btn-simulation" class="px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#EFECE6] text-[#262322] hover:bg-[#E6E0D4] cursor-pointer">
+                    הדמיית שאלון (תצוגת משתמש)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== MANAGEMENT VIEW ==================== -->
+        <div id="view-management" class="space-y-8">
+            
+            <!-- Dashboard Sub-Tabs -->
+            <div class="flex border-b border-[#E6E0D4] space-x-6 space-x-reverse text-sm font-semibold overflow-x-auto">
+                <button onclick="switchDashboardTab('sheets')" id="dtab-sheets" class="pb-3 border-b-2 border-[#C26D46] text-[#C26D46] transition whitespace-nowrap cursor-pointer">
+                    ניהול גיליונות ושאלונים
+                </button>
+                <button onclick="switchDashboardTab('editor')" id="dtab-editor" class="pb-3 border-b-2 border-transparent text-[#7A7267] hover:text-[#262322] transition whitespace-nowrap cursor-pointer">
+                    עריכת עיצוב וטקסטים
+                </button>
+                <button onclick="switchDashboardTab('stats')" id="dtab-stats" class="pb-3 border-b-2 border-transparent text-[#7A7267] hover:text-[#262322] transition whitespace-nowrap cursor-pointer">
+                    סטטיסטיקות וניתוח נתונים
+                </button>
+                <button onclick="switchDashboardTab('participants')" id="dtab-participants" class="pb-3 border-b-2 border-transparent text-[#7A7267] hover:text-[#262322] transition whitespace-nowrap cursor-pointer">
+                    משתתפים ותוצאות
+                </button>
+            </div>
+
+            <!-- TAB 1: SHEETS MANAGEMENT -->
+            <div id="dpanel-sheets" class="space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs">
+                    <div>
+                        <h2 class="text-2xl font-bold serif-title text-[#262322]">גיליונות שאלונים פעילים</h2>
+                        <p class="text-sm text-[#7A7267] mt-1">צור גיליונות חדשים בלחיצת כפתור, העתק לינקים ישירות למשתמשים בטלפון, באייפד ובמחשב.</p>
+                    </div>
+                    <button onclick="createNewSheet()" class="bg-[#C26D46] text-white px-6 py-3.5 rounded-2xl text-sm font-semibold hover:bg-[#AD5B37] transition shadow-sm flex items-center space-x-2 space-x-reverse cursor-pointer">
+                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                        צור גיליון חדש
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sheets-grid">
+                    <!-- Dynamic Sheet Cards rendered via JS -->
+                </div>
+            </div>
+
+            <!-- TAB 2: EDITOR (DESIGN & TEXT & QUESTIONS) -->
+            <div id="dpanel-editor" class="hidden space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold serif-title text-[#262322]">עריכת תוכן, שאלות ועיצוב</h2>
+                        <p class="text-sm text-[#7A7267] mt-1">בחר גיליון לעריכה, ערוך את 21 השאלות + השאלה הקשה, והתאם אישית את הפונטים, הצבעים והטקסטים.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-semibold text-[#595248]">בחר גיליון לעריכה:</label>
+                        <select id="editor-sheet-selector" onchange="loadSheetIntoEditor(this.value)" class="border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Editor Workspace -->
+                <div id="editor-workspace" class="space-y-6">
+                    <!-- General Settings Card -->
+                    <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs space-y-6">
+                        <h3 class="text-xl font-bold border-b border-[#F1ECE4] pb-3 serif-title text-[#262322]">הגדרות כלליות ומסך פתיחה של הגיליון</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">כותרת הגיליון</label>
+                                <input type="text" id="edit-sheet-title" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C26D46]">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">תמונת רקע גלובלית (כתובת URL)</label>
+                                <input type="text" id="edit-global-bg" placeholder="https://..." class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C26D46]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">סגנון פונט</label>
+                                <select id="edit-font-family" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                                    <option value="'Heebo', sans-serif">Heebo (מודרני נקי)</option>
+                                    <option value="'Frank Ruhl Libre', serif">Frank Ruhl Libre (עיתונאי קלאסי - הארץ)</option>
+                                    <option value="'Alef', sans-serif">Alef (עברית אלגנטית)</option>
+                                    <option value="'Assistant', sans-serif">Assistant (עוזרי נקי)</option>
+                                    <option value="'Varela Round', sans-serif">Varela Round (עגלגל ומזמין)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">צבע רקע</label>
+                                <input type="color" id="edit-bg-color" value="#FAF8F5" class="w-full h-12 border border-[#D4C9BD] rounded-2xl px-2 py-1 cursor-pointer bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">צבע טקסט ראשי</label>
+                                <input type="color" id="edit-text-color" value="#262322" class="w-full h-12 border border-[#D4C9BD] rounded-2xl px-2 py-1 cursor-pointer bg-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">טקסט מסך פתיחה (ברוכים הבאים)</label>
+                            <textarea id="edit-welcome-text" rows="2" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C26D46]"></textarea>
+                        </div>
+                        
+                        <!-- Global UI Text Editor for complete customization -->
+                        <div class="pt-6 border-t border-[#F1ECE4] space-y-4">
+                            <h4 class="text-base font-bold serif-title text-[#262322]">עריכת טקסטים וכותרות במערכת</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">כותרת ראשית במערכת (Brand Title)</label>
+                                    <input type="text" id="text-brand-title" value="כ\"ב שאלות" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">כותרת משנה במערכת</label>
+                                    <input type="text" id="text-brand-subtitle" value="מערכת ניהול שעשועון טריוויה עיתונאית" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">כפתור "גלו את התשובה"</label>
+                                    <input type="text" id="text-reveal-btn" value="גלו את התשובה" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-[#7A7267] mb-2">כפתור "סיום וחזרה למסך הבית"</label>
+                                    <input type="text" id="text-finish-btn" value="סיום וחזרה למסך הבית" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Container (21 normal + 1 hard) -->
+                    <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs space-y-6">
+                        <div class="flex justify-between items-center border-b border-[#F1ECE4] pb-4">
+                            <h3 class="text-xl font-bold serif-title text-[#262322]">שאלות השאלון (21 רגילות + שאלה קשה במיוחד)</h3>
+                            <span class="text-xs text-[#7A7267] font-semibold">ערוך שאלות, תשובות, הסברים ותמונות רקע פרטניות</span>
+                        </div>
+                        <div id="questions-editor-list" class="space-y-6">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="flex justify-end">
+                        <button onclick="saveActiveSheetChanges()" class="bg-[#262322] text-white px-8 py-4 rounded-2xl text-sm font-semibold hover:bg-black transition shadow-md cursor-pointer">
+                            שמור שינויים בגיליון
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: STATISTICS & CHARTS -->
+            <div id="dpanel-stats" class="hidden space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold serif-title text-[#262322]">לוח סטטיסטיקות וניתוח נתונים</h2>
+                        <p class="text-sm text-[#7A7267] mt-1">צפה בנתונים מאוחדים, השוואות מחזורים, וביצועי שאלונים עם גרפים עיתונאיים אינטראקטיביים.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-semibold text-[#595248]">סוג גרף:</label>
+                        <select id="chart-type-selector" onchange="renderStatisticsCharts()" class="border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                            <option value="bar">גרף עמודות</option>
+                            <option value="pie">גרף עוגה</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Metrics Overview Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-7 rounded-3xl border border-[#E6E0D4] shadow-xs">
+                        <p class="text-xs uppercase text-[#7A7267] font-bold">סך הכל משתתפים</p>
+                        <h3 class="text-4xl font-bold mt-2 serif-title text-[#262322]" id="stat-total-users">0</h3>
+                        <p class="text-xs text-[#A39B8F] mt-1">ענו על שאלונים במערכת</p>
+                    </div>
+                    <div class="bg-white p-7 rounded-3xl border border-[#E6E0D4] shadow-xs">
+                        <p class="text-xs uppercase text-[#7A7267] font-bold">ממוצע ציון כללי</p>
+                        <h3 class="text-4xl font-bold mt-2 serif-title text-[#262322]" id="stat-avg-score">0.0</h3>
+                        <p class="text-xs text-[#A39B8F] mt-1">מתוך 22 שאלות</p>
+                    </div>
+                    <div class="bg-white p-7 rounded-3xl border border-[#E6E0D4] shadow-xs">
+                        <p class="text-xs uppercase text-[#7A7267] font-bold">גיליונות פעילים</p>
+                        <h3 class="text-4xl font-bold mt-2 serif-title text-[#262322]" id="stat-total-sheets">0</h3>
+                        <p class="text-xs text-[#A39B8F] mt-1">במערכת כרגע</p>
+                    </div>
+                    <div class="bg-white p-7 rounded-3xl border border-[#E6E0D4] shadow-xs">
+                        <p class="text-xs uppercase text-[#7A7267] font-bold">מחזור מוביל</p>
+                        <h3 class="text-4xl font-bold mt-2 serif-title text-[#262322]" id="stat-top-cohort">-</h3>
+                        <p class="text-xs text-[#A39B8F] mt-1">אחוזי הצלחה גבוהים ביותר</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col h-[400px]">
+                        <h3 class="text-lg font-bold mb-4 serif-title text-[#262322]">השוואת ממוצעים לפי מחזור (כ', כ"א, כ"ב)</h3>
+                        <div class="relative flex-grow flex items-center justify-center">
+                            <canvas id="cohortChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col h-[400px]">
+                        <h3 class="text-lg font-bold mb-4 serif-title text-[#262322]">התפלגות ציונים לפי גיליונות שאלונים</h3>
+                        <div class="relative flex-grow flex items-center justify-center">
+                            <canvas id="sheetsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PARTICIPANTS & SUBMISSIONS -->
+            <div id="dpanel-participants" class="hidden space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold serif-title text-[#262322]">ניהול משתתפים ותוצאות</h2>
+                        <p class="text-sm text-[#7A7267] mt-1">צפה בכל ההגשות, סנן לפי מחזור או חפש לפי שם, ומחק משתמשים בעת הצורך.</p>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <input type="text" id="participant-search" oninput="renderParticipantsTable()" placeholder="חפש לפי שם משתתף..." class="border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C26D46] w-full sm:w-64">
+                        <select id="filter-cohort" onchange="renderParticipantsTable()" class="border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                            <option value="">כל המחזורים</option>
+                            <option value="כ'">מחזור כ'</option>
+                            <option value="כ'א">מחזור כ"א</option>
+                            <option value="כ'ב">מחזור כ"ב</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl border border-[#E6E0D4] shadow-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-[#FAF8F5] border-b border-[#E6E0D4] text-xs font-bold uppercase text-[#7A7267] tracking-wider">
+                                    <th class="py-4 px-6">שם משתתף</th>
+                                    <th class="py-4 px-6">מחזור</th>
+                                    <th class="py-4 px-6">שאלון</th>
+                                    <th class="py-4 px-6">ציון סופי</th>
+                                    <th class="py-4 px-6">אחוז הצלחה</th>
+                                    <th class="py-4 px-6">תאריך הגשה</th>
+                                    <th class="py-4 px-6 text-center">פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participants-table-body" class="divide-y divide-[#F1ECE4] text-sm">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ==================== SIMULATION / RESPONDENT VIEW ==================== -->
+        <div id="view-simulation" class="hidden max-w-xl mx-auto space-y-6">
+            
+            <!-- Sheet Selector Bar for Simulation -->
+            <div id="sim-selector-bar" class="bg-white p-5 rounded-3xl border border-[#E6E0D4] shadow-xs flex items-center justify-between">
+                <span class="text-sm font-semibold text-[#595248]">בחר גיליון לבדיקה כמדגם משתמש:</span>
+                <select id="sim-sheet-selector" onchange="initSimulationSheet(this.value)" class="border border-[#D4C9BD] rounded-2xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                </select>
+            </div>
+
+            <!-- Respondent App Container -->
+            <div id="quiz-app-container" class="bg-white rounded-3xl border border-[#E6E0D4] shadow-md overflow-hidden transition-all duration-300 relative">
+                
+                <!-- SCREEN 1: REGISTRATION -->
+                <div id="quiz-screen-reg" class="p-8 sm:p-12 space-y-6 text-center">
+                    <div class="w-16 h-16 bg-[#262322] text-[#FAF8F5] rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold serif-title shadow-xs">כ"ב</div>
+                    <div class="space-y-2">
+                        <h2 id="sim-welcome-title" class="text-3xl font-bold serif-title text-[#262322]">כ"ב שאלות</h2>
+                        <p id="sim-welcome-desc" class="text-[#7A7267] text-sm max-w-md mx-auto leading-relaxed">ברוכים הבאים לשאלון כ"ב שאלות. ענו על 21 שאלות רגילות ושאלה קשה במיוחד.</p>
+                    </div>
+                    
+                    <div class="max-w-sm mx-auto space-y-4 text-right pt-2">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-[#7A7267] mb-1.5">שם מלא</label>
+                            <input type="text" id="reg-name" placeholder="הכנס את שמך המלא" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C26D46]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-[#7A7267] mb-1.5">מחזור</label>
+                            <select id="reg-cohort" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46] font-medium">
+                                <option value="כ'">מחזור כ'</option>
+                                <option value="כ'א">מחזור כ"א</option>
+                                <option value="כ'ב">מחזור כ"ב</option>
+                            </select>
+                        </div>
+                        <button onclick="startQuizFlow()" class="w-full bg-[#262322] text-white py-4 rounded-2xl font-semibold hover:bg-black transition shadow-sm mt-2 cursor-pointer">
+                            התחל בשאלון
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SCREEN 2: QUESTION VIEW -->
+                <div id="quiz-screen-question" class="hidden flex flex-col min-h-[560px]">
+                    <!-- Header progress -->
+                    <div class="px-6 py-4 border-b border-[#E6E0D4] flex justify-between items-center text-xs font-semibold text-[#7A7267] bg-[#FAF8F5]">
+                        <span id="q-counter-label">שאלה 1 מתוך 22</span>
+                        <span id="q-type-label" class="px-3.5 py-1.5 bg-[#262322] text-white rounded-xl">שאלה רגילה</span>
+                    </div>
+
+                    <!-- Question Content Area -->
+                    <div id="q-bg-container" class="p-8 sm:p-10 flex-grow flex flex-col justify-between space-y-8 bg-cover bg-center">
+                        <div class="space-y-4">
+                            <h3 id="q-text-display" class="text-2xl sm:text-3xl font-bold serif-title text-[#262322] leading-snug"></h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Reveal Answer Button -->
+                            <div id="reveal-section">
+                                <button onclick="revealAnswer()" id="reveal-btn-text" class="w-full bg-[#C26D46] text-white py-4 rounded-2xl font-semibold hover:bg-[#AD5B37] transition shadow-sm cursor-pointer">
+                                    גלו את התשובה
+                                </button>
+                            </div>
+
+                            <!-- Answer & Explanation Box (Hidden initially) -->
+                            <div id="answer-box" class="hidden space-y-4 bg-white/95 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-[#E6E0D4] shadow-sm">
+                                <div>
+                                    <span class="text-xs font-bold uppercase text-[#A39B8F]">תשובה נכונה:</span>
+                                    <p id="q-answer-display" class="text-xl font-bold text-[#262322] mt-1 serif-title"></p>
+                                </div>
+                                <div class="border-t border-[#F1ECE4] pt-3">
+                                    <span class="text-xs font-bold uppercase text-[#A39B8F]">הסבר:</span>
+                                    <p id="q-explanation-display" class="text-sm text-[#595248] mt-1.5 leading-relaxed"></p>
+                                </div>
+
+                                <!-- Correct / Incorrect Choice Buttons -->
+                                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-[#F1ECE4]">
+                                    <button onclick="recordAnswerChoice(true)" class="bg-[#587B60] text-white py-3.5 rounded-2xl font-semibold hover:bg-[#48654E] transition shadow-xs flex items-center justify-center space-x-2 space-x-reverse cursor-pointer">
+                                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                        צדקתי 🟢
+                                    </button>
+                                    <button onclick="recordAnswerChoice(false)" class="bg-[#A65B52] text-white py-3.5 rounded-2xl font-semibold hover:bg-[#924D45] transition shadow-xs flex items-center justify-center space-x-2 space-x-reverse cursor-pointer">
+                                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        טעיתי 🔴
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 3: RESULTS & STATISTICS -->
+                <div id="quiz-screen-results" class="hidden p-8 sm:p-12 space-y-6 text-center">
+                    <div class="w-16 h-16 bg-[#587B60] text-white rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold shadow-xs">✓</div>
+                    <div class="space-y-2">
+                        <h2 class="text-3xl font-bold serif-title text-[#262322]">כל הכבוד, סיימת את השאלון!</h2>
+                        <p class="text-[#7A7267] text-sm">הנה סיכום התוצאות והסטטיסטיקות שלך מול שאר המשתתפים.</p>
+                    </div>
+
+                    <div class="bg-[#FAF8F5] p-7 rounded-3xl border border-[#E6E0D4] max-w-sm mx-auto space-y-3">
+                        <div class="text-xs uppercase text-[#7A7267] font-bold">הציון הסופי שלך</div>
+                        <div class="text-5xl font-black serif-title text-[#262322]" id="res-score-display">0 / 22</div>
+                        <div class="text-sm font-semibold text-[#595248] pt-3 border-t border-[#E6E0D4]" id="res-percentile-display"></div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="finishQuizAndReturnHome()" id="finish-btn-text" class="bg-[#262322] text-white px-8 py-4 rounded-2xl font-semibold hover:bg-black transition shadow-sm cursor-pointer">
+                            סיום וחזרה למסך הבית
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Notification Modal (Replacing alert) -->
+    <div id="custom-modal" class="fixed inset-0 bg-[#262322]/40 backdrop-blur-xs z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-xl border border-[#E6E0D4] space-y-4 text-center">
+            <h3 id="modal-title" class="text-xl font-bold serif-title text-[#262322]">הודעת מערכת</h3>
+            <p id="modal-message" class="text-sm text-[#595248] leading-relaxed whitespace-pre-line"></p>
+            <div id="modal-actions" class="flex justify-center pt-2">
+                <button onclick="closeModal()" class="bg-[#262322] text-white px-8 py-3 rounded-2xl text-sm font-semibold hover:bg-black transition cursor-pointer">
+                    אישור
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic with LocalStorage persistence -->
+    <script>
+        // --- DATA STORE & INITIALIZATION ---
+        let appData = {
+            sheets: [
+                {
+                    id: "sheet_1",
+                    title: "גיליון מספר 1: שאלון פתיחת עונה",
+                    globalBg: "",
+                    fontFamily: "'Frank Ruhl Libre', serif",
+                    bgColor: "#FAF8F5",
+                    textColor: "#262322",
+                    welcomeText: "ברוכים הבאים לשאלון כ\"ב שאלות. ענו על 21 שאלות רגילות ושאלה קשה במיוחד.",
+                    revealBtnText: "גלו את התשובה",
+                    finishBtnText: "סיום וחזרה למסך הבית",
+                    questions: generateDefaultQuestions()
+                }
+            ],
+            participants: [
+                { id: "p1", name: "יובל כהן", cohort: "כ'א", sheetId: "sheet_1", score: 19, date: "2026-06-01" },
+                { id: "p2", name: "נועה לוי", cohort: "כ'", sheetId: "sheet_1", score: 22, date: "2026-06-02" },
+                { id: "p3", name: "איתי שוורץ", cohort: "כ'ב", sheetId: "sheet_1", score: 16, date: "2026-06-03" }
+            ],
+            managementTexts: {
+                brandTitle: "כ\"ב שאלות",
+                brandSubtitle: "מערכת ניהול שעשועון טריוויה עיתונאית"
+            }
+        };
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem("kb_editorial_app_data_v4");
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading localStorage", e);
+                }
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem("kb_editorial_app_data_v4", JSON.stringify(appData));
+        }
+
+        let activeSheetId = "sheet_1";
+        let currentSimState = {
+            sheetId: "",
+            name: "",
+            cohort: "",
+            currentIndex: 0,
+            score: 0
+        };
+
+        let cohortChartInstance = null;
+        let sheetsChartInstance = null;
+
+        function generateDefaultQuestions() {
+            let qs = [];
+            for (let i = 1; i <= 21; i++) {
+                qs.push({
+                    number: i,
+                    isHard: false,
+                    questionText: `שאלה רגילה מספר ${i} בסגנון הארץ / איתי הרמן: מהו האירוע ההיסטורי המרכזי שקשור ל...?`,
+                    answerText: `תשובה נכונה לשאלה ${i}`,
+                    explanationText: `הסבר מעמיק אודות התשובה לשאלה מספר ${i} וההקשר ההיסטורי שלה.`,
+                    bgImage: ""
+                });
+            }
+            qs.push({
+                number: 22,
+                isHard: true,
+                questionText: `השאלה הקשה במיוחד: איזה פרט טריוויה נדיר מסתתר מאחורי האירוע שקרה ב... ושינה את פני ההיסטוריה?`,
+                answerText: `התשובה לשאלה הקשה במיוחד`,
+                explanationText: `הסבר מפורט על השאלה הקשה, כולל אנקדוטות היסטוריות נסתרות ורקע מקצועי.`,
+                bgImage: ""
+            });
+            return qs;
+        }
+
+        window.onload = function() {
+            loadFromLocalStorage();
+            if(appData.sheets.length > 0) {
+                activeSheetId = appData.sheets[0].id;
+            }
+            
+            // Handle URL query sheet parameter robustly across devices (mobile, tablet, desktop)
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySheet = urlParams.get('sheet');
+            
+            if (querySheet && appData.sheets.some(s => s.id === querySheet)) {
+                activeSheetId = querySheet;
+                // If accessed via shared link, lock to participant quiz view only
+                document.getElementById("nav-mode-container").style.display = "none";
+                document.getElementById("sim-selector-bar").style.display = "none";
+                switchView('simulation');
+                initSimulationSheet(activeSheetId);
+            } else {
+                renderManagementTexts();
+                renderSheetsGrid();
+                populateSheetSelectors();
+                loadSheetIntoEditor(activeSheetId);
+                renderStatisticsOverview();
+                renderParticipantsTable();
+                renderStatisticsCharts();
+                
+                let simSel = document.getElementById("sim-sheet-selector");
+                if(simSel && appData.sheets.length > 0) {
+                    simSel.innerHTML = appData.sheets.map(s => `<option value="${s.id}" ${s.id === activeSheetId ? 'selected' : ''}>${s.title}</option>`).join('');
+                    initSimulationSheet(activeSheetId);
+                }
+            }
+        };
+
+        function renderManagementTexts() {
+            const mt = appData.managementTexts || {};
+            document.getElementById("app-brand-title").innerText = mt.brandTitle || "כ\"ב שאלות";
+            document.getElementById("app-brand-subtitle").innerText = mt.brandSubtitle || "מערכת ניהול שעשועון טריוויה עיתונאית";
+            document.getElementById("text-brand-title").value = mt.brandTitle || "כ\"ב שאלות";
+            document.getElementById("text-brand-subtitle").value = mt.brandSubtitle || "מערכת ניהול שעשועון טריוויה עיתונאית";
+        }
+
+        function switchView(viewName) {
+            const mgmtView = document.getElementById("view-management");
+            const simView = document.getElementById("view-simulation");
+            const mgmtBtn = document.getElementById("nav-btn-management");
+            const simBtn = document.getElementById("nav-btn-simulation");
+
+            if (viewName === 'management') {
+                mgmtView.classList.remove('hidden');
+                simView.classList.add('hidden');
+                mgmtBtn.className = "px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#262322] text-[#FAF8F5] shadow-xs cursor-pointer";
+                simBtn.className = "px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#EFECE6] text-[#262322] hover:bg-[#E6E0D4] cursor-pointer";
+                renderStatisticsOverview();
+                renderParticipantsTable();
+                renderStatisticsCharts();
+            } else {
+                mgmtView.classList.add('hidden');
+                simView.classList.remove('hidden');
+                simBtn.className = "px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#262322] text-[#FAF8F5] shadow-xs cursor-pointer";
+                mgmtBtn.className = "px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition bg-[#EFECE6] text-[#262322] hover:bg-[#E6E0D4] cursor-pointer";
+            }
+        }
+
+        function switchDashboardTab(tabName) {
+            const tabs = ['sheets', 'editor', 'stats', 'participants'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`dtab-${t}`);
+                const panel = document.getElementById(`dpanel-${t}`);
+                if (t === tabName) {
+                    btn.className = "pb-3 border-b-2 border-[#C26D46] text-[#C26D46] transition whitespace-nowrap cursor-pointer";
+                    panel.classList.remove('hidden');
+                } else {
+                    btn.className = "pb-3 border-b-2 border-transparent text-[#7A7267] hover:text-[#262322] transition whitespace-nowrap cursor-pointer";
+                    panel.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- SHEET MANAGEMENT LOGIC ---
+        function renderSheetsGrid() {
+            const grid = document.getElementById("sheets-grid");
+            grid.innerHTML = appData.sheets.map(sheet => {
+                const countParts = appData.participants.filter(p => p.sheetId === sheet.id).length;
+                return `
+                    <div class="bg-white p-7 rounded-3xl border border-[#E6E0D4] shadow-xs flex flex-col justify-between space-y-6">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs uppercase tracking-wider text-[#A39B8F] font-bold">שאלון פעיל</span>
+                                <span class="bg-[#FAF8F5] border border-[#E6E0D4] text-[#262322] text-xs px-3 py-1 rounded-xl font-semibold">${countParts} משתתפים</span>
+                            </div>
+                            <h3 class="font-bold text-xl serif-title text-[#262322] leading-snug">${sheet.title}</h3>
+                            <p class="text-xs text-[#7A7267]">21 שאלות רגילות + שאלה קשה במיוחד</p>
+                        </div>
+                        <div class="space-y-3 pt-4 border-t border-[#F1ECE4]">
+                            <button onclick="copyQuizLink('${sheet.id}')" class="w-full bg-[#262322] text-white py-3.5 rounded-2xl text-xs font-semibold hover:bg-black transition flex items-center justify-center space-x-2 space-x-reverse shadow-xs cursor-pointer">
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                העתק לינק לשאלון (מותאם לטלפון, אייפד ומחשב)
+                            </button>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <button onclick="loadSheetIntoEditor('${sheet.id}'); switchDashboardTab('editor');" class="flex-1 bg-[#F1ECE4] text-[#262322] py-2.5 rounded-xl text-xs font-semibold hover:bg-[#E6E0D4] transition cursor-pointer">
+                                    עריכה
+                                </button>
+                                <button onclick="deleteSheet('${sheet.id}')" class="px-4 text-[#A65B52] bg-[#FDF2F0] hover:bg-[#FCE8E6] py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer">
+                                    מחיקה
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createNewSheet() {
+            const newId = "sheet_" + Date.now();
+            const newNum = appData.sheets.length + 1;
+            const newSheet = {
+                id: newId,
+                title: `גיליון מספר ${newNum}: שאלון חדש`,
+                globalBg: "",
+                fontFamily: "'Frank Ruhl Libre', serif",
+                bgColor: "#FAF8F5",
+                textColor: "#262322",
+                welcomeText: `ברוכים הבאים לשאלון כ\"ב שאלות מספר ${newNum}. בהצלחה באתגר!`,
+                revealBtnText: "גלו את התשובה",
+                finishBtnText: "סיום וחזרה למסך הבית",
+                questions: generateDefaultQuestions()
+            };
+            appData.sheets.push(newSheet);
+            saveToLocalStorage();
+            renderSheetsGrid();
+            populateSheetSelectors();
+            loadSheetIntoEditor(newId);
+            switchDashboardTab('editor');
+            showModal("נוצר גיליון חדש", `הגיליון "${newSheet.title}" נוסף בהצלחה ופתוח כעת לעריכה.`);
+        }
+
+        function deleteSheet(sheetId) {
+            if (appData.sheets.length <= 1) {
+                showModal("שגיאה", "לא ניתן למחוק את הגיליון האחרון במערכת.");
+                return;
+            }
+            if (confirm("האם אתה בטוח שברצונך למחוק גיליון זה? כל המשתמשים שענו עליו יימחקו מהסטטיסטיקות.")) {
+                appData.sheets = appData.sheets.filter(s => s.id !== sheetId);
+                appData.participants = appData.participants.filter(p => p.sheetId !== sheetId);
+                
+                saveToLocalStorage();
+                renderSheetsGrid();
+                populateSheetSelectors();
+                renderStatisticsOverview();
+                renderParticipantsTable();
+                renderStatisticsCharts();
+                showModal("גיליון נמחק", "הגיליון וכל התוצאות המשויכות אליו הוסרו בהצלחה.");
+            }
+        }
+
+        function copyQuizLink(sheetId) {
+            // Generates absolute robust URL supporting mobile, iPad, and desktop browsers
+            const baseUrl = window.location.href.split('?')[0];
+            const dummyUrl = baseUrl + "?sheet=" + sheetId;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(dummyUrl).then(() => {
+                    showModal("הקישור הועתק בהצלחה!", `הקישור לשאלון הועתק ללוח:\n${dummyUrl}\n\nכעת תוכל לשלוח אותו בווטסאפ לטלפון, לאייפד או למחשב.`);
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(dummyUrl);
+                });
+            } else {
+                fallbackCopyTextToClipboard(dummyUrl);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showModal("הקישור הועתק בהצלחה!", `הקישור לשאלון הועתק ללוח:\n${text}`);
+            } catch (err) {
+                showModal("קישור לשאלון", `העתק ידנית את הקישור הבא:\n${text}`);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function populateSheetSelectors() {
+            const edSel = document.getElementById("editor-sheet-selector");
+            const simSel = document.getElementById("sim-sheet-selector");
+            
+            const optionsHtml = appData.sheets.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+            if(edSel) edSel.innerHTML = optionsHtml;
+            if(simSel) simSel.innerHTML = optionsHtml;
+        }
+
+        // --- EDITOR LOGIC ---
+        function loadSheetIntoEditor(sheetId) {
+            activeSheetId = sheetId;
+            const sheet = appData.sheets.find(s => s.id === sheetId);
+            if (!sheet) return;
+
+            document.getElementById("editor-sheet-selector").value = sheetId;
+            document.getElementById("edit-sheet-title").value = sheet.title;
+            document.getElementById("edit-global-bg").value = sheet.globalBg;
+            document.getElementById("edit-font-family").value = sheet.fontFamily;
+            document.getElementById("edit-bg-color").value = sheet.bgColor;
+            document.getElementById("edit-text-color").value = sheet.textColor;
+            document.getElementById("edit-welcome-text").value = sheet.welcomeText;
+            document.getElementById("text-reveal-btn").value = sheet.revealBtnText || "גלו את התשובה";
+            document.getElementById("text-finish-btn").value = sheet.finishBtnText || "סיום וחזרה למסך הבית";
+
+            const listContainer = document.getElementById("questions-editor-list");
+            listContainer.innerHTML = sheet.questions.map((q, idx) => `
+                <div class="p-6 sm:p-7 rounded-3xl border ${q.isHard ? 'border-[#D99B52] bg-[#FDF9F0]' : 'border-[#E6E0D4] bg-[#FAF8F5]/60'} space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold uppercase px-3.5 py-1.5 rounded-xl ${q.isHard ? 'bg-[#FCECD8] text-[#A76313]' : 'bg-[#EFECE6] text-[#7A7267]'}">
+                            ${q.isHard ? 'שאלה קשה במיוחד ★ (#22)' : `שאלה רגילה #${q.number}`}
+                        </span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#595248] mb-1.5">טקסט השאלה</label>
+                        <textarea rows="2" id="q-text-${idx}" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46]">${q.questionText}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-[#595248] mb-1.5">תשובה נכונה</label>
+                            <input type="text" id="q-ans-${idx}" value="${q.answerText}" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-[#595248] mb-1.5">תמונת רקע פרטנית לשאלה (URL)</label>
+                            <input type="text" id="q-bg-${idx}" value="${q.bgImage}" placeholder="https://..." class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46]">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#595248] mb-1.5">הסבר קצר שיופיע מתחת לתשובה</label>
+                        <textarea rows="2" id="q-exp-${idx}" class="w-full border border-[#D4C9BD] rounded-2xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C26D46]">${q.explanationText}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveActiveSheetChanges() {
+            const sheet = appData.sheets.find(s => s.id === activeSheetId);
+            if (!sheet) return;
+
+            sheet.title = document.getElementById("edit-sheet-title").value;
+            sheet.globalBg = document.getElementById("edit-global-bg").value;
+            sheet.fontFamily = document.getElementById("edit-font-family").value;
+            sheet.bgColor = document.getElementById("edit-bg-color").value;
+            sheet.textColor = document.getElementById("edit-text-color").value;
+            sheet.welcomeText = document.getElementById("edit-welcome-text").value;
+            sheet.revealBtnText = document.getElementById("text-reveal-btn").value;
+            sheet.finishBtnText = document.getElementById("text-finish-btn").value;
+
+            if (!appData.managementTexts) appData.managementTexts = {};
+            appData.managementTexts.brandTitle = document.getElementById("text-brand-title").value;
+            appData.managementTexts.brandSubtitle = document.getElementById("text-brand-subtitle").value;
+
+            sheet.questions.forEach((q, idx) => {
+                q.questionText = document.getElementById(`q-text-${idx}`).value;
+                q.answerText = document.getElementById(`q-ans-${idx}`).value;
+                q.bgImage = document.getElementById(`q-bg-${idx}`).value;
+                q.explanationText = document.getElementById(`q-exp-${idx}`).value;
+            });
+
+            saveToLocalStorage();
+            renderManagementTexts();
+            renderSheetsGrid();
+            populateSheetSelectors();
+            showModal("השינויים נשמרו", `הגיליון "${sheet.title}" עודכן בהצלחה.`);
+        }
+
+        // --- SIMULATION & RESPONDENT FLOW ---
+        function initSimulationSheet(sheetId) {
+            currentSimState.sheetId = sheetId;
+            const sheet = appData.sheets.find(s => s.id === sheetId);
+            if (!sheet) return;
+
+            document.getElementById("sim-welcome-title").innerText = sheet.title;
+            document.getElementById("sim-welcome-desc").innerText = sheet.welcomeText;
+            
+            const container = document.getElementById("quiz-app-container");
+            container.style.fontFamily = sheet.fontFamily;
+            container.style.backgroundColor = sheet.bgColor;
+            container.style.color = sheet.textColor;
+            
+            document.getElementById("quiz-screen-reg").classList.remove('hidden');
+            document.getElementById("quiz-screen-question").classList.add('hidden');
+            document.getElementById("quiz-screen-results").classList.add('hidden');
+        }
+
+        function startQuizFlow() {
+            const nameInput = document.getElementById("reg-name").value.trim();
+            const cohortInput = document.getElementById("reg-cohort").value;
+
+            if (!nameInput) {
+                showModal("שגיאה", "אנא הזן את שמך המלא לפני תחילת השאלון.");
+                return;
+            }
+
+            currentSimState.name = nameInput;
+            currentSimState.cohort = cohortInput;
+            currentSimState.currentIndex = 0;
+            currentSimState.score = 0;
+
+            document.getElementById("quiz-screen-reg").classList.add('hidden');
+            document.getElementById("quiz-screen-question").classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const sheet = appData.sheets.find(s => s.id === currentSimState.sheetId);
+            if (!sheet) return;
+
+            const qIdx = currentSimState.currentIndex;
+            const q = sheet.questions[qIdx];
+
+            document.getElementById("q-counter-label").innerText = `שאלה ${qIdx + 1} מתוך ${sheet.questions.length}`;
+            
+            const typeLabel = document.getElementById("q-type-label");
+            if (q.isHard) {
+                typeLabel.innerText = "שאלה קשה במיוחד ★";
+                typeLabel.className = "px-3.5 py-1.5 bg-[#C26D46] text-white rounded-xl font-bold shadow-xs";
+            } else {
+                typeLabel.innerText = "שאלה רגילה";
+                typeLabel.className = "px-3.5 py-1.5 bg-[#262322] text-white rounded-xl";
+            }
+
+            document.getElementById("q-text-display").innerText = q.questionText;
+            document.getElementById("q-answer-display").innerText = q.answerText;
+            document.getElementById("q-explanation-display").innerText = q.explanationText;
+            document.getElementById("reveal-btn-text").innerText = sheet.revealBtnText || "גלו את התשובה";
+
+            const bgContainer = document.getElementById("q-bg-container");
+            const bgToUse = q.bgImage || sheet.globalBg;
+            if (bgToUse) {
+                bgContainer.style.backgroundImage = `linear-gradient(rgba(250,248,245,0.96), rgba(250,248,245,0.96)), url('${bgToUse}')`;
+            } else {
+                bgContainer.style.backgroundImage = 'none';
+            }
+
+            document.getElementById("reveal-section").classList.remove('hidden');
+            document.getElementById("answer-box").classList.add('hidden');
+        }
+
+        function revealAnswer() {
+            document.getElementById("reveal-section").classList.add('hidden');
+            document.getElementById("answer-box").classList.remove('hidden');
+        }
+
+        function recordAnswerChoice(isCorrect) {
+            if (isCorrect) currentSimState.score++;
+            currentSimState.currentIndex++;
+
+            const sheet = appData.sheets.find(s => s.id === currentSimState.sheetId);
+            if (currentSimState.currentIndex < sheet.questions.length) {
+                renderCurrentQuestion();
+            } else {
+                const newParticipant = {
+                    id: "p_" + Date.now(),
+                    name: currentSimState.name,
+                    cohort: currentSimState.cohort,
+                    sheetId: currentSimState.sheetId,
+                    score: currentSimState.score,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                appData.participants.push(newParticipant);
+                saveToLocalStorage();
+
+                document.getElementById("quiz-screen-question").classList.add('hidden');
+                document.getElementById("quiz-screen-results").classList.remove('hidden');
+                
+                document.getElementById("res-score-display").innerText = `${currentSimState.score} / ${sheet.questions.length}`;
+                document.getElementById("finish-btn-text").innerText = sheet.finishBtnText || "סיום וחזרה למסך הבית";
+                
+                const sheetParts = appData.participants.filter(p => p.sheetId === sheet.id);
+                const worseCount = sheetParts.filter(p => p.score < currentSimState.score).length;
+                const percentile = sheetParts.length > 1 ? Math.round((worseCount / (sheetParts.length - 1)) * 100) : 100;
+                
+                document.getElementById("res-percentile-display").innerText = `הצלחת יותר מ-${percentile}% מהמשתתפים בשאלון זה!`;
+            }
+        }
+
+        function finishQuizAndReturnHome() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sheet')) {
+                // If accessed via direct mobile link, reload or reset state cleanly
+                document.getElementById("quiz-screen-results").classList.add('hidden');
+                document.getElementById("quiz-screen-reg").classList.remove('hidden');
+                document.getElementById("reg-name").value = "";
+            } else {
+                document.getElementById("quiz-screen-results").classList.add('hidden');
+                document.getElementById("quiz-screen-reg").classList.remove('hidden');
+                document.getElementById("reg-name").value = "";
+                switchView('management');
+            }
+        }
+
+        // --- PARTICIPANTS & STATISTICS LOGIC ---
+        function renderStatisticsOverview() {
+            const totalUsers = appData.participants.length;
+            document.getElementById("stat-total-users").innerText = totalUsers;
+
+            let totalScoreSum = 0;
+            appData.participants.forEach(p => totalScoreSum += p.score);
+            const avgScore = totalUsers > 0 ? (totalScoreSum / totalUsers).toFixed(1) : "0.0";
+            document.getElementById("stat-avg-score").innerText = avgScore;
+
+            document.getElementById("stat-total-sheets").innerText = appData.sheets.length;
+
+            let cohorts = ["כ'", "כ'א", "כ'ב"];
+            let cohortAvgs = cohorts.map(c => {
+                let cp = appData.participants.filter(p => p.cohort === c);
+                let sum = 0;
+                cp.forEach(p => sum += p.score);
+                return { cohort: c, avg: cp.length > 0 ? sum / cp.length : 0 };
+            });
+            cohortAvgs.sort((a, b) => b.avg - a.avg);
+            document.getElementById("stat-top-cohort").innerText = cohortAvgs[0].avg > 0 ? `מחזור ${cohortAvgs[0].cohort}` : "-";
+        }
+
+        function renderParticipantsTable() {
+            const tbody = document.getElementById("participants-table-body");
+            const searchVal = document.getElementById("participant-search").value.toLowerCase();
+            const filterCoh = document.getElementById("filter-cohort").value;
+
+            let filtered = appData.participants.filter(p => {
+                let matchesName = p.name.toLowerCase().includes(searchVal);
+                let matchesCoh = !filterCoh || p.cohort === filterCoh;
+                return matchesName && matchesCoh;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-[#A39B8F]">לא נמצאו משתתפים מתאימים.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => {
+                const sheet = appData.sheets.find(s => s.id === p.sheetId);
+                const sheetTitle = sheet ? sheet.title : "גיליון הוסר";
+                const successRate = Math.round((p.score / 22) * 100);
+                return `
+                    <tr class="hover:bg-[#FAF8F5]/80 transition">
+                        <td class="py-4 px-6 font-semibold text-[#262322]">${p.name}</td>
+                        <td class="py-4 px-6"><span class="bg-[#FAF8F5] border border-[#E6E0D4] px-3.5 py-1 rounded-xl text-xs font-semibold">${p.cohort}</span></td>
+                        <td class="py-4 px-6 text-[#7A7267] text-xs">${sheetTitle}</td>
+                        <td class="py-4 px-6 font-bold">${p.score} / 22</td>
+                        <td class="py-4 px-6 text-[#595248]">${successRate}%</td>
+                        <td class="py-4 px-6 text-[#7A7267] text-xs">${p.date}</td>
+                        <td class="py-4 px-6 text-center">
+                            <button onclick="deleteParticipant('${p.id}')" class="text-xs text-[#A65B52] hover:text-[#924D45] font-semibold px-3.5 py-1.5 bg-[#FDF2F0] rounded-xl transition cursor-pointer">
+                                מחק
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteParticipant(pid) {
+            if (confirm("האם למחוק משתתף זה כך שלא יופיע עוד בסטטיסטיקות?")) {
+                appData.participants = appData.participants.filter(p => p.id !== pid);
+                saveToLocalStorage();
+                renderStatisticsOverview();
+                renderParticipantsTable();
+                renderStatisticsCharts();
+                showModal("משתתף נמחק", "המשתתף הוסר בהצלחה ממערכת הנתונים.");
+            }
+        }
+
+        // --- CHARTS RENDERING (CHART.JS) ---
+        function renderStatisticsCharts() {
+            const chartType = document.getElementById("chart-type-selector").value;
+
+            let cohorts = ["כ'", "כ'א", "כ'ב"];
+            let cohortData = cohorts.map(c => {
+                let cp = appData.participants.filter(p => p.cohort === c);
+                let sum = 0;
+                cp.forEach(p => sum += p.score);
+                return cp.length > 0 ? (sum / cp.length).toFixed(1) : 0;
+            });
+
+            if (cohortChartInstance) cohortChartInstance.destroy();
+            const ctxCohort = document.getElementById('cohortChart').getContext('2d');
+            cohortChartInstance = new Chart(ctxCohort, {
+                type: chartType,
+                data: {
+                    labels: cohorts.map(c => `מחזור ${c}`),
+                    datasets: [{
+                        label: 'ממוצע ציונים',
+                        data: cohortData,
+                        backgroundColor: ['#262322', '#C26D46', '#8C8275'],
+                        borderColor: '#FAF8F5',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: chartType === 'pie' } },
+                    scales: chartType === 'bar' ? { y: { beginAtZero: true, max: 22 } } : {}
+                }
+            });
+
+            let sheetLabels = appData.sheets.map(s => s.title.split(':')[0]);
+            let sheetData = appData.sheets.map(s => {
+                let sp = appData.participants.filter(p => p.sheetId === s.id);
+                let sum = 0;
+                sp.forEach(p => sum += p.score);
+                return sp.length > 0 ? (sum / sp.length).toFixed(1) : 0;
+            });
+
+            if (sheetsChartInstance) sheetsChartInstance.destroy();
+            const ctxSheets = document.getElementById('sheetsChart').getContext('2d');
+            sheetsChartInstance = new Chart(ctxSheets, {
+                type: chartType,
+                data: {
+                    labels: sheetLabels,
+                    datasets: [{
+                        label: 'ממוצע ציונים בגיליון',
+                        data: sheetData,
+                        backgroundColor: ['#262322', '#587B60', '#C26D46', '#D4C9BD'],
+                        borderColor: '#FAF8F5',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: chartType === 'pie' } },
+                    scales: chartType === 'bar' ? { y: { beginAtZero: true, max: 22 } } : {}
+                }
+            });
+        }
+
+        // --- CUSTOM MODAL UTILS ---
+        function showModal(title, message) {
+            document.getElementById("modal-title").innerText = title;
+            document.getElementById("modal-message").innerText = message;
+            document.getElementById("custom-modal").classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById("custom-modal").classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
